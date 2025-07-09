@@ -1,0 +1,129 @@
+import { motion } from 'framer-motion';
+import { Zap, Battery, BatteryCharging } from 'lucide-react';
+
+const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
+  // Tính toán energy dựa trên completion rate
+  const energyPercentage = total > 0 ? (completed / total) * maxEnergy : 0;
+  const clampedEnergy = Math.min(energyPercentage, maxEnergy);
+  
+  // Xác định level và màu sắc
+  const getEnergyLevel = (energy) => {
+    if (energy >= 80) return { level: 'High', color: 'from-green-400 to-green-600', icon: BatteryCharging };
+    if (energy >= 50) return { level: 'Medium', color: 'from-yellow-400 to-yellow-600', icon: Battery };
+    if (energy >= 20) return { level: 'Low', color: 'from-orange-400 to-orange-600', icon: Battery };
+    return { level: 'Empty', color: 'from-gray-300 to-gray-400', icon: Battery };
+  };
+
+  const energyLevel = getEnergyLevel(clampedEnergy);
+
+  return (
+    <motion.div
+      className="card border-l-4 border-green-200 bg-green-50"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ scale: 1.02 }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-medium text-gray-600 mb-1">Energy Level</p>
+          <p className="text-lg font-bold text-gray-900">{energyLevel.level}</p>
+        </div>
+        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+          <energyLevel.icon className="w-6 h-6 text-green-600" />
+        </div>
+      </div>
+
+      {/* Energy Bar */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-gray-600">Progress</span>
+          <span className="font-semibold text-gray-900">
+            {completed}/{total} tasks completed
+          </span>
+        </div>
+        
+        {/* Main Energy Bar */}
+        <div className="relative">
+          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full bg-gradient-to-r ${energyLevel.color} relative`}
+              initial={{ width: 0 }}
+              animate={{ width: `${clampedEnergy}%` }}
+              transition={{ 
+                duration: 1, 
+                ease: "easeOut",
+                delay: 0.2 
+              }}
+            >
+              {/* Energy particles effect */}
+              {clampedEnergy > 0 && (
+                <motion.div
+                  className="absolute inset-0"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  {[...Array(5)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      className="absolute w-1 h-1 bg-white rounded-full opacity-70"
+                      style={{
+                        left: `${20 + i * 15}%`,
+                        top: '50%',
+                        transform: 'translateY(-50%)'
+                      }}
+                      animate={{
+                        y: [-2, 2, -2],
+                        opacity: [0.7, 1, 0.7]
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        delay: i * 0.3
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          </div>
+          
+          {/* Energy percentage */}
+          <motion.div
+            className="absolute -top-8 right-0 text-xs font-bold text-gray-700"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8 }}
+          >
+            {Math.round(clampedEnergy)}%
+          </motion.div>
+        </div>
+
+        {/* Energy boost message */}
+        {clampedEnergy > 0 && (
+          <motion.div
+            className="flex items-center gap-2 text-sm text-green-600"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+          >
+            <Zap className="w-4 h-4" />
+            <span>
+              {clampedEnergy >= 80 
+                ? "Amazing energy! Keep it up! 🔥" 
+                : clampedEnergy >= 50 
+                ? "Good progress! You're doing great! ⚡" 
+                : clampedEnergy >= 20 
+                ? "Keep going! Every task counts! 💪" 
+                : "Start completing tasks to build energy! 🚀"
+              }
+            </span>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export default EnergyBar; 
