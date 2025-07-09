@@ -19,7 +19,9 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   // Configure axios defaults
-  axios.defaults.baseURL = 'http://localhost:5000/api';
+  axios.defaults.baseURL = process.env.NODE_ENV === 'production' 
+    ? (import.meta.env.VITE_API_URL || 'https://your-app.railway.app/api')
+    : 'http://localhost:5000/api';
 
   // Set auth token on axios headers
   const setAuthToken = (token) => {

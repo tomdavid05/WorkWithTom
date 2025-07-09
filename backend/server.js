@@ -28,7 +28,7 @@ app.use('/api/', limiter);
 // CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-frontend-domain.com'] 
+    ? [process.env.FRONTEND_URL || 'https://your-app.netlify.app'] 
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true
 }));
