@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# 🚀 Deploy Script for Let's Do It Todo App
+# This script helps automate the deployment process
+
 echo "🚀 Starting deployment process..."
 
 # Colors for output
@@ -26,154 +29,158 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if required tools are installed
-check_requirements() {
-    print_status "Checking requirements..."
-    
-    if ! command -v node &> /dev/null; then
-        print_error "Node.js is not installed. Please install Node.js first."
-        exit 1
-    fi
-    
-    if ! command -v npm &> /dev/null; then
-        print_error "npm is not installed. Please install npm first."
-        exit 1
-    fi
-    
-    if ! command -v git &> /dev/null; then
-        print_error "Git is not installed. Please install Git first."
-        exit 1
-    fi
-    
-    print_success "All requirements are met!"
-}
+# Check if git is installed
+if ! command -v git &> /dev/null; then
+    print_error "Git is not installed. Please install Git first."
+    exit 1
+fi
 
-# Deploy Backend
-deploy_backend() {
-    print_status "Deploying Backend to Railway..."
-    
-    cd backend
-    
-    # Check if Railway CLI is installed
-    if ! command -v railway &> /dev/null; then
-        print_warning "Railway CLI not found. Installing..."
-        npm install -g @railway/cli
-    fi
-    
-    # Login to Railway (if not already logged in)
-    if ! railway whoami &> /dev/null; then
-        print_status "Please login to Railway..."
-        railway login
-    fi
-    
-    # Deploy to Railway
-    print_status "Deploying to Railway..."
-    railway up --detach
-    
-    if [ $? -eq 0 ]; then
-        print_success "Backend deployed successfully!"
-        
-        # Get the deployed URL
-        BACKEND_URL=$(railway status --json | grep -o '"url":"[^"]*"' | cut -d'"' -f4)
-        echo "Backend URL: $BACKEND_URL"
-        
-        # Save the URL for frontend
-        echo $BACKEND_URL > ../.backend-url
-    else
-        print_error "Backend deployment failed!"
-        exit 1
-    fi
-    
-    cd ..
-}
+# Check if Node.js is installed
+if ! command -v node &> /dev/null; then
+    print_error "Node.js is not installed. Please install Node.js first."
+    exit 1
+fi
 
-# Deploy Frontend
-deploy_frontend() {
-    print_status "Deploying Frontend to Vercel..."
-    
-    cd frontend
-    
-    # Check if Vercel CLI is installed
-    if ! command -v vercel &> /dev/null; then
-        print_warning "Vercel CLI not found. Installing..."
-        npm install -g vercel
-    fi
-    
-    # Build the project
-    print_status "Building frontend..."
-    npm run build
-    
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+    print_error "npm is not installed. Please install npm first."
+    exit 1
+fi
+
+print_status "Checking project structure..."
+
+# Check if backend directory exists
+if [ ! -d "backend" ]; then
+    print_error "Backend directory not found!"
+    exit 1
+fi
+
+# Check if frontend directory exists
+if [ ! -d "frontend" ]; then
+    print_error "Frontend directory not found!"
+    exit 1
+fi
+
+print_success "Project structure is valid"
+
+# Test backend locally
+print_status "Testing backend locally..."
+
+cd backend
+
+# Check if dependencies are installed
+if [ ! -d "node_modules" ]; then
+    print_status "Installing backend dependencies..."
+    npm install
     if [ $? -ne 0 ]; then
-        print_error "Frontend build failed!"
+        print_error "Failed to install backend dependencies"
         exit 1
     fi
-    
-    # Deploy to Vercel
-    print_status "Deploying to Vercel..."
-    vercel --prod --yes
-    
-    if [ $? -eq 0 ]; then
-        print_success "Frontend deployed successfully!"
-        
-        # Get the deployed URL
-        FRONTEND_URL=$(vercel ls --json | grep -o '"url":"[^"]*"' | cut -d'"' -f4)
-        echo "Frontend URL: $FRONTEND_URL"
-        
-        # Save the URL
-        echo $FRONTEND_URL > ../.frontend-url
-    else
-        print_error "Frontend deployment failed!"
+fi
+
+# Check if config.env exists
+if [ ! -f "config.env" ]; then
+    print_warning "config.env not found. Please create it with your database configuration."
+    echo "Example config.env:"
+    echo "SQL_USER=your_username"
+    echo "SQL_PASSWORD=your_password"
+    echo "SQL_DATABASE=your_database"
+    echo "SQL_SERVER=your_server"
+    echo "JWT_SECRET=your_secret_key"
+    echo "PORT=5000"
+    echo "NODE_ENV=development"
+fi
+
+print_success "Backend setup complete"
+
+# Test frontend locally
+print_status "Testing frontend locally..."
+
+cd ../frontend
+
+# Check if dependencies are installed
+if [ ! -d "node_modules" ]; then
+    print_status "Installing frontend dependencies..."
+    npm install
+    if [ $? -ne 0 ]; then
+        print_error "Failed to install frontend dependencies"
         exit 1
     fi
-    
-    cd ..
-}
+fi
 
-# Update environment variables
-update_env_vars() {
-    print_status "Updating environment variables..."
-    
-    if [ -f .backend-url ]; then
-        BACKEND_URL=$(cat .backend-url)
-        print_status "Backend URL: $BACKEND_URL"
-        
-        # Update frontend environment
-        cd frontend
-        echo "VITE_API_URL=$BACKEND_URL" > .env.production
-        print_success "Frontend environment updated!"
-        cd ..
-    fi
-}
+# Check if .env file exists
+if [ ! -f ".env" ]; then
+    print_warning ".env not found. Please create it with your API URL."
+    echo "Example .env:"
+    echo "VITE_API_URL=http://localhost:5000"
+fi
 
-# Main deployment function
-main() {
-    print_status "Starting deployment process..."
-    
-    # Check requirements
-    check_requirements
-    
-    # Deploy backend
-    deploy_backend
-    
-    # Update environment variables
-    update_env_vars
-    
-    # Deploy frontend
-    deploy_frontend
-    
-    print_success "🎉 Deployment completed successfully!"
-    print_status "Your app is now live!"
-    
-    if [ -f .frontend-url ]; then
-        FRONTEND_URL=$(cat .frontend-url)
-        echo "Frontend: $FRONTEND_URL"
-    fi
-    
-    if [ -f .backend-url ]; then
-        BACKEND_URL=$(cat .backend-url)
-        echo "Backend: $BACKEND_URL"
-    fi
-}
+print_success "Frontend setup complete"
 
-# Run main function
-main "$@" 
+# Check git status
+cd ..
+print_status "Checking git status..."
+
+if [ -z "$(git status --porcelain)" ]; then
+    print_success "Working directory is clean"
+else
+    print_warning "Working directory has uncommitted changes"
+    echo "Files with changes:"
+    git status --porcelain
+    echo ""
+    read -p "Do you want to commit these changes? (y/n): " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        git add .
+        git commit -m "Auto-commit before deployment"
+        print_success "Changes committed"
+    fi
+fi
+
+# Check if remote repository is configured
+if ! git remote get-url origin &> /dev/null; then
+    print_error "No remote repository configured!"
+    echo "Please add your GitHub repository:"
+    echo "git remote add origin https://github.com/your-username/your-repo.git"
+    exit 1
+fi
+
+print_status "Pushing to GitHub..."
+
+# Push to GitHub
+git push origin main
+if [ $? -ne 0 ]; then
+    print_error "Failed to push to GitHub"
+    exit 1
+fi
+
+print_success "Code pushed to GitHub successfully!"
+
+echo ""
+echo "🎉 Deployment preparation complete!"
+echo ""
+echo "📋 Next steps:"
+echo "1. Deploy backend to Railway:"
+echo "   - Go to https://railway.app"
+echo "   - Create new project from GitHub"
+echo "   - Set root directory to 'backend'"
+echo "   - Add environment variables"
+echo ""
+echo "2. Deploy frontend to Netlify:"
+echo "   - Go to https://netlify.com"
+echo "   - Create new site from GitHub"
+echo "   - Set base directory to 'frontend'"
+echo "   - Set build command to 'npm run build'"
+echo "   - Set publish directory to 'dist'"
+echo ""
+echo "3. Update environment variables:"
+echo "   - Add VITE_API_URL in Netlify"
+echo "   - Add FRONTEND_URL in Railway"
+echo ""
+echo "4. Test the deployment:"
+echo "   - Test backend health check"
+echo "   - Test frontend functionality"
+echo "   - Test user registration/login"
+echo ""
+
+print_success "Deployment script completed successfully!" 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTasks } from '../contexts/TaskContext';
 import { 
@@ -9,9 +9,81 @@ import {
   Calendar,
   AlertTriangle,
   Clock,
-  Check
+  Check,
+  Timer
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, differenceInHours, differenceInDays } from 'date-fns';
+
+// Component để hiển thị countdown timer
+const CountdownTimer = ({ dueDate, isOverdue }) => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const due = new Date(dueDate);
+      const diff = due - now;
+
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0 });
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      
+      setTimeLeft({ days, hours });
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000 * 60); // Update every minute
+
+    return () => clearInterval(timer);
+  }, [dueDate]);
+
+  if (isOverdue) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-[#ff5555] font-medium">
+        <AlertTriangle className="w-3 h-3" />
+        Overdue
+      </span>
+    );
+  }
+
+  if (timeLeft.days === 0 && timeLeft.hours === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-[#ffb86c] font-medium">
+        <Timer className="w-3 h-3" />
+        Due now
+      </span>
+    );
+  }
+
+  const getTimeColor = () => {
+    if (timeLeft.days === 0 && timeLeft.hours <= 24) {
+      return 'text-red-600 dark:text-[#ff5555]';
+    } else if (timeLeft.days <= 3) {
+      return 'text-orange-600 dark:text-[#ffb86c]';
+    } else {
+      return 'text-blue-600 dark:text-[#8be9fd]';
+    }
+  };
+
+  const formatTimeLeft = () => {
+    if (timeLeft.days > 0) {
+      return `${timeLeft.days}d ${timeLeft.hours}h`;
+    } else {
+      return `${timeLeft.hours}h`;
+    }
+  };
+
+  return (
+    <span className={`inline-flex items-center gap-1 text-xs font-medium ${getTimeColor()}`}>
+      <Timer className="w-3 h-3" />
+      {formatTimeLeft()} left
+    </span>
+  );
+};
 
 const TaskItem = ({ task }) => {
   const { toggleTask, deleteTask, updateTask } = useTasks();
@@ -53,13 +125,13 @@ const TaskItem = ({ task }) => {
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'high':
-        return 'text-red-600 bg-red-50 border-red-200';
+        return 'text-red-600 bg-red-50 border-red-200 dark:text-[#ff5555] dark:bg-[#44475a] dark:border-[#ff5555]/30';
       case 'medium':
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200 dark:text-[#ffb86c] dark:bg-[#44475a] dark:border-[#ffb86c]/30';
       case 'low':
-        return 'text-green-600 bg-green-50 border-green-200';
+        return 'text-green-600 bg-green-50 border-green-200 dark:text-[#50fa7b] dark:bg-[#44475a] dark:border-[#50fa7b]/30';
       default:
-        return 'text-gray-600 bg-gray-50 border-gray-200';
+        return 'text-gray-600 bg-gray-50 border-gray-200 dark:text-[#bcbcbc] dark:bg-[#44475a] dark:border-[#44475a]';
     }
   };
 
@@ -80,7 +152,7 @@ const TaskItem = ({ task }) => {
 
   return (
     <motion.div
-      className={`task-item ${task.completed ? 'task-completed' : ''} ${getPriorityColor(task.priority).split(' ')[0]}`}
+      className={`task-item card ${task.completed ? 'task-completed opacity-60' : ''}`}
       whileHover={{ scale: 1.01 }}
       whileTap={{ scale: 0.99 }}
     >
@@ -104,7 +176,7 @@ const TaskItem = ({ task }) => {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e3e6f3]">Priority</label>
               <select
                 value={editData.priority}
                 onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
@@ -117,7 +189,7 @@ const TaskItem = ({ task }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Due Date</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e3e6f3]">Due Date</label>
               <input
                 type="date"
                 value={editData.due_date}
@@ -160,11 +232,11 @@ const TaskItem = ({ task }) => {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <h3 className={`font-medium text-gray-900 ${task.completed ? 'line-through' : ''}`}>
+                <h3 className={`font-medium text-gray-900 dark:text-[#e3e6f3] ${task.completed ? 'line-through' : ''}`}>
                   {task.title}
                 </h3>
                 {task.description && (
-                  <p className={`text-sm text-gray-600 mt-1 ${task.completed ? 'line-through' : ''}`}>
+                  <p className={`text-sm text-gray-600 dark:text-[#7f7a9e] mt-1 ${task.completed ? 'line-through' : ''}`}>
                     {task.description}
                   </p>
                 )}
@@ -179,11 +251,15 @@ const TaskItem = ({ task }) => {
                   
                   {/* Due Date */}
                   {task.due_date && (
-                    <span className={`inline-flex items-center gap-1 text-xs ${isOverdue ? 'text-red-600' : 'text-gray-500'}`}>
+                    <span className={`inline-flex items-center gap-1 text-xs ${isOverdue ? 'text-red-600 dark:text-[#ff5555]' : 'text-gray-500 dark:text-[#7f7a9e]'}`}>
                       <Calendar className="w-3 h-3" />
                       {format(new Date(task.due_date), 'MMM dd, yyyy')}
-                      {isOverdue && <span className="text-red-600 font-medium"> (Overdue)</span>}
                     </span>
+                  )}
+                  
+                  {/* Countdown Timer */}
+                  {task.due_date && !task.completed && (
+                    <CountdownTimer dueDate={task.due_date} isOverdue={isOverdue} />
                   )}
                 </div>
               </div>
@@ -192,13 +268,13 @@ const TaskItem = ({ task }) => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-[#35365c] rounded-lg transition-colors"
                 >
                   <Edit className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleDelete}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-[#35365c] rounded-lg transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

@@ -8,45 +8,57 @@
   }
   
   body {
-    @apply bg-gradient-to-br from-slate-50 via-primary-50 to-secondary-50 min-h-screen font-sans;
+    @apply bg-gradient-to-br from-slate-50 via-primary-50 to-secondary-50 min-h-screen font-sans text-gray-900;
   }
 }
 
 @layer components {
+  .card {
+    @apply bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-6;
+    @apply dark:bg-[#23243a] dark:border-[#35365c] dark:text-[#f8f8f2];
+  }
+  .quick-action-card {
+    @apply bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-6;
+    @apply dark:bg-[#23243a] dark:border-[#35365c] dark:text-[#f8f8f2];
+  }
+  .quick-action-btn {
+    @apply w-full flex items-center gap-3 p-4 rounded-xl border-2 border-gray-200 hover:border-primary-300 hover:bg-primary-50/50 transition-all duration-300 text-gray-700;
+    @apply dark:border-[#35365c] dark:hover:bg-[#35365c] dark:text-[#f8f8f2];
+  }
+  .quick-action-icon {
+    @apply w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center group-hover:bg-yellow-200 transition-colors;
+    @apply dark:bg-[#282a36] dark:group-hover:bg-[#bd93f9]/20;
+  }
   .btn-primary {
     @apply bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+    @apply dark:from-[#bd93f9] dark:to-[#ff79c6] dark:text-[#23243a] dark:shadow-[#bd93f9]/30;
   }
-  
+  .btn-primary:hover {
+    @apply dark:from-[#ff79c6] dark:to-[#bd93f9];
+  }
   .btn-secondary {
     @apply bg-white/80 backdrop-blur-sm hover:bg-white text-gray-700 font-semibold py-3 px-6 rounded-xl border border-white/20 transition-all duration-300 shadow-lg;
+    @apply dark:bg-[#35365c] dark:text-[#f8f8f2] dark:border-[#23243a] dark:hover:bg-[#23243a];
   }
-  
-  .card {
-    @apply backdrop-blur-xl bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-6;
-  }
-  
   .input-field {
-    @apply w-full px-4 py-3 bg-white/50 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 hover:border-primary-300 transition-all duration-300 placeholder-gray-400;
+    @apply w-full px-4 py-3 bg-white/50 border-2 border-gray-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 hover:border-primary-300 transition-all duration-300 placeholder-gray-400 text-gray-900;
+    @apply dark:bg-[#23243a] dark:border-[#bd93f9] dark:placeholder-[#6272a4] dark:text-[#f8f8f2];
   }
-  
   .task-item {
     @apply backdrop-blur-sm bg-white/80 rounded-2xl shadow-lg border border-white/20 p-4 hover:shadow-xl hover:scale-105 transition-all duration-300;
+    @apply dark:bg-[#23243a] dark:border-[#35365c] dark:text-[#f8f8f2];
   }
-  
-  .task-completed {
-    @apply opacity-60 line-through;
+  .filter-tab {
+    @apply flex items-center gap-1 bg-white/50 backdrop-blur-sm rounded-xl p-1 border border-white/20;
+    @apply dark:bg-[#23243a] dark:border-[#35365c];
   }
-  
-  .priority-high {
-    @apply border-l-4 border-l-red-500 bg-red-50/50;
+  .filter-btn {
+    @apply px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 text-gray-600 hover:text-gray-900 hover:bg-white/50;
+    @apply dark:text-[#6272a4] dark:hover:text-[#f8f8f2] dark:hover:bg-[#35365c];
   }
-  
-  .priority-medium {
-    @apply border-l-4 border-l-yellow-500 bg-yellow-50/50;
-  }
-  
-  .priority-low {
-    @apply border-l-4 border-l-green-500 bg-green-50/50;
+  .filter-btn-active {
+    @apply bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-lg;
+    @apply dark:from-[#bd93f9] dark:to-[#ff79c6] dark:text-[#23243a];
   }
 }
 
@@ -56,7 +68,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100/50 backdrop-blur-sm rounded-full;
+  @apply bg-gray-100/50 dark:bg-[#282a36] backdrop-blur-sm rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -80,7 +92,24 @@
 }
 
 .glass-dark {
-  @apply backdrop-blur-xl bg-gray-900/80 border border-gray-700/20;
+  @apply backdrop-blur-xl bg-[#44475a] border border-[#6272a4];
+}
+
+/* Dark mode specific styles */
+.dark .card {
+  @apply shadow-2xl shadow-[#1e1f29]/30;
+}
+
+.dark .task-item {
+  @apply shadow-lg shadow-[#1e1f29]/20;
+}
+
+.dark .btn-primary {
+  @apply shadow-lg shadow-[#bd93f9]/20;
+}
+
+.dark .btn-secondary {
+  @apply shadow-lg shadow-[#1e1f29]/20;
 }
 
 /* Gradient text */
@@ -96,4 +125,87 @@
 
 .animate-float {
   animation: float 3s ease-in-out infinite;
+}
+
+/* Dark mode glow effects */
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(189, 147, 249, 0.1); }
+  50% { box-shadow: 0 0 30px rgba(189, 147, 249, 0.2); }
+}
+
+.dark .animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Dark mode text gradients */
+.dark .gradient-text {
+  @apply bg-gradient-to-r from-[#bd93f9] to-[#ff79c6] bg-clip-text text-transparent;
+}
+
+/* Dracula theme specific styles */
+.dark .btn-primary {
+  @apply bg-gradient-to-r from-[#bd93f9] to-[#ff79c6] text-[#282a36] font-semibold;
+}
+
+.dark .btn-primary:hover {
+  @apply from-[#ff79c6] to-[#bd93f9];
+}
+
+/* Dracula accent colors */
+.dark .accent-purple {
+  @apply text-[#bd93f9];
+}
+
+.dark .accent-pink {
+  @apply text-[#ff79c6];
+}
+
+.dark .accent-green {
+  @apply text-[#50fa7b];
+}
+
+.dark .accent-yellow {
+  @apply text-[#f1fa8c];
+}
+
+.dark .accent-red {
+  @apply text-[#ff5555];
+}
+
+.dark .accent-cyan {
+  @apply text-[#8be9fd];
+}
+
+/* Dracula background overrides */
+.dark body {
+  background: #282a36 !important;
+}
+
+.dark .min-h-screen {
+  background: #282a36 !important;
+}
+
+/* Ensure solid Dracula background */
+.dark {
+  background-color: #282a36 !important;
+} 
+
+.card, .quick-action-card, .task-item {
+  @apply dark:text-[#f8f8f2];
+}
+.quick-action-btn, .filter-btn, .filter-btn-active, .btn-primary, .btn-secondary {
+  @apply dark:text-[#f8f8f2];
+}
+.input-field {
+  @apply dark:text-[#f8f8f2] dark:placeholder-[#bcbcbc];
+}
+.label, .text-secondary, .text-gray-600, .text-gray-700 {
+  @apply dark:text-[#bcbcbc];
+} 
+
+.stat-title {
+  @apply text-gray-600 dark:text-[#bd93f9] font-medium;
+}
+.stat-value {
+  @apply text-2xl font-bold text-gray-900 dark:text-white;
 } 

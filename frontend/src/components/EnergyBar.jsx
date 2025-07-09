@@ -8,17 +8,17 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
   
   // Xác định level và màu sắc
   const getEnergyLevel = (energy) => {
-    if (energy >= 80) return { level: 'High', color: 'from-green-400 to-green-600', icon: BatteryCharging };
-    if (energy >= 50) return { level: 'Medium', color: 'from-yellow-400 to-yellow-600', icon: Battery };
-    if (energy >= 20) return { level: 'Low', color: 'from-orange-400 to-orange-600', icon: Battery };
-    return { level: 'Empty', color: 'from-gray-300 to-gray-400', icon: Battery };
+    if (energy >= 80) return { level: 'High', color: 'from-green-400 to-green-600 dark:from-green-500 dark:to-green-700', icon: BatteryCharging };
+    if (energy >= 50) return { level: 'Medium', color: 'from-yellow-400 to-yellow-600 dark:from-yellow-500 dark:to-yellow-700', icon: Battery };
+    if (energy >= 20) return { level: 'Low', color: 'from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700', icon: Battery };
+    return { level: 'Empty', color: 'from-gray-300 to-gray-400 dark:from-gray-500 dark:to-gray-600', icon: Battery };
   };
 
   const energyLevel = getEnergyLevel(clampedEnergy);
 
   return (
     <motion.div
-      className="card border-l-4 border-green-200 bg-green-50"
+      className="card border-l-4 border-green-200 bg-green-50 dark:border-[#44475a] dark:bg-[#282a36]"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -26,26 +26,26 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
     >
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">Energy Level</p>
-          <p className="text-lg font-bold text-gray-900">{energyLevel.level}</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-[#bcbcbc] mb-1">Energy Level</p>
+          <p className="text-lg font-bold text-gray-900 dark:text-[#f8f8f2]">{energyLevel.level}</p>
         </div>
-        <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
-          <energyLevel.icon className="w-6 h-6 text-green-600" />
+        <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-[#44475a] flex items-center justify-center">
+          <energyLevel.icon className="w-6 h-6 text-green-600 dark:text-[#50fa7b]" />
         </div>
       </div>
 
       {/* Energy Bar */}
       <div className="space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600">Progress</span>
-          <span className="font-semibold text-gray-900">
+          <span className="text-gray-600 dark:text-[#bcbcbc]">Progress</span>
+          <span className="font-semibold text-gray-900 dark:text-[#f8f8f2]">
             {completed}/{total} tasks completed
           </span>
         </div>
         
         {/* Main Energy Bar */}
         <div className="relative">
-          <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-4 bg-gray-200 dark:bg-[#44475a] rounded-full overflow-hidden">
             <motion.div
               className={`h-full rounded-full bg-gradient-to-r ${energyLevel.color} relative`}
               initial={{ width: 0 }}
@@ -67,7 +67,7 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
                   {[...Array(5)].map((_, i) => (
                     <motion.div
                       key={i}
-                      className="absolute w-1 h-1 bg-white rounded-full opacity-70"
+                      className="absolute w-1 h-1 bg-white dark:bg-[#f8f8f2] rounded-full opacity-70"
                       style={{
                         left: `${20 + i * 15}%`,
                         top: '50%',
@@ -91,7 +91,7 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
           
           {/* Energy percentage */}
           <motion.div
-            className="absolute -top-8 right-0 text-xs font-bold text-gray-700"
+            className="absolute -top-8 right-0 text-xs font-bold text-gray-700 dark:text-[#f8f8f2]"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
@@ -103,7 +103,7 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
         {/* Energy boost message */}
         {clampedEnergy > 0 && (
           <motion.div
-            className="flex items-center gap-2 text-sm text-green-600"
+            className="flex items-center gap-2 text-sm text-green-600 dark:text-[#50fa7b]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}

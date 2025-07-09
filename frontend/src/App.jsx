@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import LoadingSpinner from './components/LoadingSpinner';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -23,26 +24,28 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
-      <Routes>
-        <Route 
-          path="/login" 
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} 
-        />
-        <Route 
-          path="/register" 
-          element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} 
-        />
-        <Route 
-          path="/dashboard" 
-          element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/" 
-          element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
-        />
-      </Routes>
-    </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50 dark:bg-[#282a36]">
+        <Routes>
+          <Route 
+            path="/login" 
+            element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login />} 
+          />
+          <Route 
+            path="/register" 
+            element={isAuthenticated ? <Navigate to="/dashboard" /> : <Register />} 
+          />
+          <Route 
+            path="/dashboard" 
+            element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/" 
+            element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
+          />
+        </Routes>
+      </div>
+    </ThemeProvider>
   );
 }
 
