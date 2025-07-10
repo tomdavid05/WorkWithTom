@@ -1,19 +1,20 @@
 [build]
-  publish = "dist"
   command = "npm run build"
+  publish = "dist"
 
 [build.environment]
   NODE_VERSION = "18"
+
+# Environment variables for production
+[context.production.environment]
+  VITE_API_URL = "https://lets-do-it-backend.onrender.com/api"
 
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin" 
+[dev]
+  command = "npm run dev"
+  port = 5173
+  publish = "dist" 

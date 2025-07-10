@@ -13,9 +13,11 @@ import {
   Timer
 } from 'lucide-react';
 import { format, differenceInHours, differenceInDays } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 // Component để hiển thị countdown timer
 const CountdownTimer = ({ dueDate, isOverdue }) => {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0 });
 
   useEffect(() => {
@@ -45,7 +47,7 @@ const CountdownTimer = ({ dueDate, isOverdue }) => {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-red-600 dark:text-[#ff5555] font-medium">
         <AlertTriangle className="w-3 h-3" />
-        Overdue
+        {t('overdue')}
       </span>
     );
   }
@@ -54,7 +56,7 @@ const CountdownTimer = ({ dueDate, isOverdue }) => {
     return (
       <span className="inline-flex items-center gap-1 text-xs text-orange-600 dark:text-[#ffb86c] font-medium">
         <Timer className="w-3 h-3" />
-        Due now
+        {t('due_now')}
       </span>
     );
   }
@@ -71,22 +73,23 @@ const CountdownTimer = ({ dueDate, isOverdue }) => {
 
   const formatTimeLeft = () => {
     if (timeLeft.days > 0) {
-      return `${timeLeft.days}d ${timeLeft.hours}h`;
+      return `${timeLeft.days}ng ${timeLeft.hours}g`;
     } else {
-      return `${timeLeft.hours}h`;
+      return `${timeLeft.hours}g`;
     }
   };
 
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium ${getTimeColor()}`}>
       <Timer className="w-3 h-3" />
-      {formatTimeLeft()} left
+      {t('time_left', { time: formatTimeLeft() })}
     </span>
   );
 };
 
 const TaskItem = ({ task }) => {
   const { toggleTask, deleteTask, updateTask } = useTasks();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: task.title,
@@ -100,7 +103,7 @@ const TaskItem = ({ task }) => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm(t('confirm_delete_task'))) {
       await deleteTask(task.id);
     }
   };
@@ -148,6 +151,19 @@ const TaskItem = ({ task }) => {
     }
   };
 
+  const getPriorityLabel = (priority) => {
+    switch (priority) {
+      case 'high':
+        return t('high');
+      case 'medium':
+        return t('medium');
+      case 'low':
+        return t('low');
+      default:
+        return priority;
+    }
+  };
+
   const isOverdue = task.due_date && new Date(task.due_date) < new Date() && !task.completed;
 
   return (
@@ -163,7 +179,7 @@ const TaskItem = ({ task }) => {
             value={editData.title}
             onChange={(e) => setEditData({ ...editData, title: e.target.value })}
             className="input-field font-medium"
-            placeholder="Task title"
+            placeholder={t('task_title')}
           />
           
           <textarea
@@ -171,25 +187,25 @@ const TaskItem = ({ task }) => {
             onChange={(e) => setEditData({ ...editData, description: e.target.value })}
             className="input-field resize-none"
             rows="3"
-            placeholder="Task description (optional)"
+            placeholder={t('task_description_optional')}
           />
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e3e6f3]">Priority</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e3e6f3]">{t('priority')}</label>
               <select
                 value={editData.priority}
                 onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
                 className="input-field"
               >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
+                <option value="low">{t('low')}</option>
+                <option value="medium">{t('medium')}</option>
+                <option value="high">{t('high')}</option>
               </select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e3e6f3]">Due Date</label>
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-[#e3e6f3]">Hạn hoàn thành</label>
               <input
                 type="date"
                 value={editData.due_date}
@@ -204,13 +220,13 @@ const TaskItem = ({ task }) => {
               onClick={handleEdit}
               className="btn-primary flex-1"
             >
-              Save
+              Lưu
             </button>
             <button
               onClick={handleCancelEdit}
               className="btn-secondary flex-1"
             >
-              Cancel
+              Hủy
             </button>
           </div>
         </div>
@@ -246,14 +262,14 @@ const TaskItem = ({ task }) => {
                   {/* Priority */}
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}>
                     {getPriorityIcon(task.priority)}
-                    {task.priority}
+                    {getPriorityLabel(task.priority)}
                   </span>
                   
                   {/* Due Date */}
                   {task.due_date && (
                     <span className={`inline-flex items-center gap-1 text-xs ${isOverdue ? 'text-red-600 dark:text-[#ff5555]' : 'text-gray-500 dark:text-[#7f7a9e]'}`}>
                       <Calendar className="w-3 h-3" />
-                      {format(new Date(task.due_date), 'MMM dd, yyyy')}
+                      {format(new Date(task.due_date), 'dd/MM/yyyy')}
                     </span>
                   )}
                   

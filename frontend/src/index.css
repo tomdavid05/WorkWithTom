@@ -62,21 +62,28 @@
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - Hidden/Transparent */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 0px;
+  height: 0px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100/50 dark:bg-[#282a36] backdrop-blur-sm rounded-full;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gradient-to-b from-primary-400 to-secondary-400 rounded-full;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gradient-to-b from-primary-500 to-secondary-500;
+  background: transparent;
+}
+
+/* Hide scrollbar for Firefox */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 /* Smooth animations */

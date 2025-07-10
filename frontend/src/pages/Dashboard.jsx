@@ -8,12 +8,14 @@ import TaskStats from '../components/TaskStats';
 import Header from '../components/Header';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Plus, Filter, CheckCircle, Clock, List, Search, Sparkles, Target, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
   const { tasks, loading, taskStats, filter, setFilter, fetchTasks } = useTasks();
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { t } = useTranslation();
 
   const filteredTasks = tasks.filter(task =>
     task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -63,13 +65,13 @@ const Dashboard = () => {
               transition={{ delay: 0.2 }}
             >
               <Sparkles className="w-5 h-5 text-primary-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-[#e3e6f3]">Welcome back!</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-[#e3e6f3]">{t('welcome_back')}</span>
             </motion.div>
             <h1 className="text-5xl font-bold gradient-text mb-4">
-              Hello, {user?.username}! 👋
+              {t('hello_user', { username: user?.username })} 👋
             </h1>
             <p className="text-gray-600 dark:text-[#7f7a9e] text-xl">
-              Ready to conquer your goals today? 🚀
+              {t('ready_to_conquer')}
             </p>
           </motion.div>
           {/* Stats Cards */}
@@ -86,10 +88,10 @@ const Dashboard = () => {
                   <div>
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-[#e3e6f3] mb-2 flex items-center gap-3">
                       <Target className="w-8 h-8 text-primary-500" />
-                      Your Tasks
+                      {t('your_tasks')}
                     </h2>
                     <p className="text-gray-600 dark:text-[#7f7a9e] text-lg">
-                      {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''} found
+                      {t('found_tasks', { count: filteredTasks.length })}
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
@@ -98,7 +100,7 @@ const Dashboard = () => {
                       <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="text"
-                        placeholder="Search tasks..."
+                        placeholder={t('search_tasks')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="input-field pl-12 pr-4 py-3"
@@ -110,19 +112,19 @@ const Dashboard = () => {
                         onClick={() => setFilter('all')}
                         className={`filter-btn ${filter === 'all' ? 'filter-btn-active' : ''}`}
                       >
-                        All
+                        {t('all')}
                       </button>
                       <button
                         onClick={() => setFilter('active')}
                         className={`filter-btn ${filter === 'active' ? 'filter-btn-active' : ''}`}
                       >
-                        Active
+                        {t('in_progress')}
                       </button>
                       <button
                         onClick={() => setFilter('completed')}
                         className={`filter-btn ${filter === 'completed' ? 'filter-btn-active' : ''}`}
                       >
-                        Done
+                        {t('completed')}
                       </button>
                     </div>
                   </div>
@@ -137,21 +139,21 @@ const Dashboard = () => {
               <div className="quick-action-card">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-[#e3e6f3] mb-4 flex items-center gap-2">
                   <Plus className="w-6 h-6 text-primary-500" />
-                  Quick Add Task
+                  {t('quick_add_task')}
                 </h3>
                 <button
                   onClick={() => setShowTaskForm(true)}
                   className="w-full btn-primary py-4 px-6 flex items-center justify-center gap-3"
                 >
                   <Plus className="w-5 h-5" />
-                  Add New Task
+                  {t('add_new_task')}
                 </button>
               </div>
               {/* Quick Actions */}
               <div className="quick-action-card">
                 <h3 className="text-xl font-bold text-gray-900 dark:text-[#e3e6f3] mb-4 flex items-center gap-2">
                   <TrendingUp className="w-6 h-6 text-accent-500" />
-                  Quick Actions
+                  {t('quick_actions')}
                 </h3>
                 <div className="space-y-3">
                   <button
@@ -161,7 +163,7 @@ const Dashboard = () => {
                     <div className="quick-action-icon">
                       <Clock className="w-5 h-5 text-yellow-400" />
                     </div>
-                    <span className="text-sm font-semibold">View Active Tasks</span>
+                    <span className="text-sm font-semibold">{t('view_active_tasks')}</span>
                   </button>
                   <button
                     onClick={() => setFilter('completed')}
@@ -170,7 +172,7 @@ const Dashboard = () => {
                     <div className="quick-action-icon">
                       <CheckCircle className="w-5 h-5 text-green-400" />
                     </div>
-                    <span className="text-sm font-semibold">View Completed</span>
+                    <span className="text-sm font-semibold">{t('view_completed')}</span>
                   </button>
                 </div>
               </div>
@@ -178,24 +180,24 @@ const Dashboard = () => {
               <div className="backdrop-blur-xl bg-gradient-to-r from-primary-500 via-secondary-500 to-accent-500 rounded-3xl shadow-2xl border border-white/20 p-6 text-white">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <Sparkles className="w-6 h-6" />
-                  Pro Tips
+                  {t('pro_tips')}
                 </h3>
                 <ul className="space-y-3 text-sm">
                   <li className="flex items-start gap-2">
                     <span className="text-accent-300">•</span>
-                    <span>Use priority levels to organize important tasks</span>
+                    <span>{t('tip_priority')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent-300">•</span>
-                    <span>Set due dates to stay on track</span>
+                    <span>{t('tip_deadline')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent-300">•</span>
-                    <span>Break large tasks into smaller ones</span>
+                    <span>{t('tip_split')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-accent-300">•</span>
-                    <span>Review completed tasks regularly</span>
+                    <span>{t('tip_review')}</span>
                   </li>
                 </ul>
               </div>

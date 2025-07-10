@@ -1,19 +1,27 @@
-const { sql } = require('../db');
+const { sql, isPostgreSQL } = require('../db');
 
 // Get all tasks for a user
 const getTasks = async (req, res) => {
   try {
-    const result = await sql.query`
-      SELECT id, title, description, completed, priority, due_date, created_at, updated_at
-      FROM tasks 
-      WHERE user_id = ${req.user.id}
-      ORDER BY created_at DESC
-    `;
+    let result;
+    if (isPostgreSQL) {
+      result = await sql.query(
+        'SELECT id, title, description, completed, priority, due_date, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY created_at DESC',
+        [req.user.id]
+      );
+    } else {
+      result = await sql.query`
+        SELECT id, title, description, completed, priority, due_date, created_at, updated_at
+        FROM tasks 
+        WHERE user_id = ${req.user.id}
+        ORDER BY created_at DESC
+      `;
+    }
 
     res.json({
       success: true,
       data: {
-        tasks: result.recordset
+        tasks: isPostgreSQL ? result.rows : result.recordset
       }
     });
   } catch (error) {

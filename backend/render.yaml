@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: lets-do-it-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://work-with-tom.netlify.app
+      - key: DATABASE_URL
+        fromDatabase:
+          name: lets-do-it-postgres
+          property: connectionString
+
+databases:
+  - name: lets-do-it-postgres
+    databaseName: todo_db
+    user: todo_user
+    plan: free 

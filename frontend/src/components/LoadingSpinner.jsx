@@ -1,31 +1,12 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 const LoadingSpinner = () => {
+  const { t } = useTranslation();
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-secondary-50">
-      <div className="text-center">
-        <motion.div
-          className="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full mx-auto mb-4"
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-        />
-        <motion.h2
-          className="text-2xl font-bold text-gray-800 mb-2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          Let's do it
-        </motion.h2>
-        <motion.p
-          className="text-gray-600"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          Loading your tasks...
-        </motion.p>
-      </div>
+    <div className="flex flex-col items-center justify-center min-h-[200px]">
+      <div className="w-12 h-12 border-4 border-primary-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <p className="text-gray-600 dark:text-[#bcbcbc] text-lg font-medium">{t('loading')}</p>
     </div>
   );
 };

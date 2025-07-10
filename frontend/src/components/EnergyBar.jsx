@@ -1,17 +1,19 @@
 import { motion } from 'framer-motion';
 import { Zap, Battery, BatteryCharging } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
+  const { t } = useTranslation();
   // Tính toán energy dựa trên completion rate
   const energyPercentage = total > 0 ? (completed / total) * maxEnergy : 0;
   const clampedEnergy = Math.min(energyPercentage, maxEnergy);
   
   // Xác định level và màu sắc
   const getEnergyLevel = (energy) => {
-    if (energy >= 80) return { level: 'High', color: 'from-green-400 to-green-600 dark:from-green-500 dark:to-green-700', icon: BatteryCharging };
-    if (energy >= 50) return { level: 'Medium', color: 'from-yellow-400 to-yellow-600 dark:from-yellow-500 dark:to-yellow-700', icon: Battery };
-    if (energy >= 20) return { level: 'Low', color: 'from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700', icon: Battery };
-    return { level: 'Empty', color: 'from-gray-300 to-gray-400 dark:from-gray-500 dark:to-gray-600', icon: Battery };
+    if (energy >= 80) return { level: t('high'), color: 'from-green-400 to-green-600 dark:from-green-500 dark:to-green-700', icon: BatteryCharging };
+    if (energy >= 50) return { level: t('medium'), color: 'from-yellow-400 to-yellow-600 dark:from-yellow-500 dark:to-yellow-700', icon: Battery };
+    if (energy >= 20) return { level: t('low'), color: 'from-orange-400 to-orange-600 dark:from-orange-500 dark:to-orange-700', icon: Battery };
+    return { level: t('empty'), color: 'from-gray-300 to-gray-400 dark:from-gray-500 dark:to-gray-600', icon: Battery };
   };
 
   const energyLevel = getEnergyLevel(clampedEnergy);
@@ -26,7 +28,7 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
     >
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-medium text-gray-600 dark:text-[#bcbcbc] mb-1">Energy Level</p>
+          <p className="text-sm font-medium text-gray-600 dark:text-[#bcbcbc] mb-1">{t('energy_level')}</p>
           <p className="text-lg font-bold text-gray-900 dark:text-[#f8f8f2]">{energyLevel.level}</p>
         </div>
         <div className="w-12 h-12 rounded-lg bg-green-100 dark:bg-[#44475a] flex items-center justify-center">
@@ -37,9 +39,9 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
       {/* Energy Bar */}
       <div className="space-y-3">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-600 dark:text-[#bcbcbc]">Progress</span>
+          <span className="text-gray-600 dark:text-[#bcbcbc]">{t('progress')}</span>
           <span className="font-semibold text-gray-900 dark:text-[#f8f8f2]">
-            {completed}/{total} tasks completed
+            {completed}/{total} {t('tasks_completed')}
           </span>
         </div>
         
@@ -88,16 +90,6 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
               )}
             </motion.div>
           </div>
-          
-          {/* Energy percentage */}
-          <motion.div
-            className="absolute -top-8 right-0 text-xs font-bold text-gray-700 dark:text-[#f8f8f2]"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.8 }}
-          >
-            {Math.round(clampedEnergy)}%
-          </motion.div>
         </div>
 
         {/* Energy boost message */}
@@ -111,12 +103,12 @@ const EnergyBar = ({ completed, total, maxEnergy = 100 }) => {
             <Zap className="w-4 h-4" />
             <span>
               {clampedEnergy >= 80 
-                ? "Amazing energy! Keep it up! 🔥" 
+                ? t('amazing_energy')
                 : clampedEnergy >= 50 
-                ? "Good progress! You're doing great! ⚡" 
+                ? t('good_progress')
                 : clampedEnergy >= 20 
-                ? "Keep going! Every task counts! 💪" 
-                : "Start completing tasks to build energy! 🚀"
+                ? t('keep_going')
+                : t('start_completing')
               }
             </span>
           </motion.div>

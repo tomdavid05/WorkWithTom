@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sql } = require('../db');
+const { sql, isPostgreSQL } = require('../db');
 
 // Register user
 const register = async (req, res) => {
@@ -23,11 +23,19 @@ const register = async (req, res) => {
     }
 
     // Check if user already exists
-    const existingUser = await sql.query`
-      SELECT id FROM users WHERE email = ${email} OR username = ${username}
-    `;
+    let existingUser;
+    if (isPostgreSQL) {
+      existingUser = await sql.query(
+        'SELECT id FROM users WHERE email = $1 OR username = $2',
+        [email, username]
+      );
+    } else {
+      existingUser = await sql.query`
+        SELECT id FROM users WHERE email = ${email} OR username = ${username}
+      `;
+    }
 
-    if (existingUser.recordset.length > 0) {
+    if ((isPostgreSQL ? existingUser.rows.length : existingUser.recordset.length) > 0) {
       return res.status(400).json({
         success: false,
         message: 'User with this email or username already exists'
@@ -39,13 +47,23 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert new user
-    const result = await sql.query`
-      INSERT INTO users (username, email, password)
-      OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.created_at
-      VALUES (${username}, ${email}, ${hashedPassword})
-    `;
-
-    const user = result.recordset[0];
+    let result;
+    let user;
+    
+    if (isPostgreSQL) {
+      result = await sql.query(
+        'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
+        [username, email, hashedPassword]
+      );
+      user = result.rows[0];
+    } else {
+      result = await sql.query`
+        INSERT INTO users (username, email, password)
+        OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.created_at
+        VALUES (${username}, ${email}, ${hashedPassword})
+      `;
+      user = result.recordset[0];
+    }
 
     // Generate JWT token
     const token = jwt.sign(
@@ -90,20 +108,28 @@ const login = async (req, res) => {
     }
 
     // Find user by email
-    const result = await sql.query`
-      SELECT id, username, email, password, created_at
-      FROM users 
-      WHERE email = ${email}
-    `;
+    let result;
+    if (isPostgreSQL) {
+      result = await sql.query(
+        'SELECT id, username, email, password, created_at FROM users WHERE email = $1',
+        [email]
+      );
+    } else {
+      result = await sql.query`
+        SELECT id, username, email, password, created_at
+        FROM users 
+        WHERE email = ${email}
+      `;
+    }
 
-    if (result.recordset.length === 0) {
+    if ((isPostgreSQL ? result.rows.length : result.recordset.length) === 0) {
       return res.status(400).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
-    const user = result.recordset[0];
+    const user = isPostgreSQL ? result.rows[0] : result.recordset[0];
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
