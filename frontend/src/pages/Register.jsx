@@ -196,7 +196,6 @@ const Register = () => {
                 </button>
               </div>
             </motion.div>
-
             {/* Confirm Password Field */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}

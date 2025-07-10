@@ -1,1 +1,1 @@
-web: npm start 
+web: node init_postgres_tables.js && node server.js 
