@@ -26,7 +26,7 @@ Một ứng dụng Todo hiện đại với tính năng Energy Bar độc đáo,
 ### Backend
 - **Node.js** - Runtime
 - **Express.js** - Web framework
-- **SQL Server/PostgreSQL** - Database
+- **PostgreSQL** - Production Database (SQL Server cho local)
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
 - **CORS** - Cross-origin requests
@@ -35,8 +35,8 @@ Một ứng dụng Todo hiện đại với tính năng Energy Bar độc đáo,
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Node.js 16+
-- SQL Server hoặc PostgreSQL
+- Node.js 18+
+- SQL Server (local development) hoặc PostgreSQL (production)
 - Git
 
 ### Installation
@@ -60,14 +60,20 @@ npm install
 
 3. **Configure environment:**
 ```bash
-# Backend (.env)
+# Backend (config.env)
+# Cho SQL Server (local development)
 SQL_USER=your_username
 SQL_PASSWORD=your_password
 SQL_DATABASE=your_database
 SQL_SERVER=your_server
+
+# Cho PostgreSQL (production)
+# DATABASE_URL=postgresql://username:password@host:port/database
+
 JWT_SECRET=your_super_secret_jwt_key
 PORT=5000
 NODE_ENV=development
+FRONTEND_URL=https://work-with-tom.netlify.app
 ```
 
 4. **Start development servers:**
@@ -93,7 +99,8 @@ http://localhost:5173
 - **API**: [https://your-app.railway.app/api](https://your-app.railway.app/api)
 
 ### Deploy Instructions
-Xem file [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) để biết hướng dẫn chi tiết.
+- **PostgreSQL Deployment**: Xem file [DEPLOYMENT_POSTGRESQL.md](./DEPLOYMENT_POSTGRESQL.md)
+- **General Deployment**: Xem file [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
 
 ## 📱 Screenshots
 
@@ -184,3 +191,4 @@ Made with ❤️ by Let's Do It Team "# LetsDoIt"
 "# WorkWithTom" 
 # WorkWithTom
 # WorkWithTomm
+# WorkWithTom
