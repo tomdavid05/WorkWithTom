@@ -7,7 +7,7 @@
 
 # Environment variables for production
 [context.production.environment]
-  VITE_API_URL = "https://lets-do-it-backend.onrender.com/api"
+  VITE_API_URL = "https://workwithtom.onrender.com/api"
 
 [[redirects]]
   from = "/*"
