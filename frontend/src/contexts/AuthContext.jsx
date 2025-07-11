@@ -77,10 +77,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(user);
       setAuthToken(token);
-      window.location.reload();
+     
       toast.success('Registration successful!');
       navigate('/dashboard');
-      
+       window.location.reload();
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
@@ -106,10 +106,10 @@ export const AuthProvider = ({ children }) => {
       
       setUser(user);
       setAuthToken(token);
-      window.location.reload();
+      
       toast.success('Login successful!');
       navigate('/dashboard');
-      
+      window.location.reload();
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';

@@ -22,10 +22,8 @@ export const TaskProvider = ({ children }) => {
     const token = localStorage.getItem('token');
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log('Set token for axios:', token);
     } else {
       delete axios.defaults.headers.common['Authorization'];
-      console.log('No token found, removed Authorization header');
     }
   }, []);
 
