@@ -26,11 +26,15 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // CORS
+// Thay đổi thành domain Netlify của bạn
+const allowedOrigins = [
+  'https://wwtom.netlify.app',
+  'http://localhost:5173' // (nếu dùng local)
+];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? [process.env.FRONTEND_URL || 'https://work-with-tom.netlify.app']
-    : ['http://localhost:5173', 'http://localhost:3000'],
-  credentials: true
+  origin: allowedOrigins,
+  credentials: true, // nếu bạn dùng cookie hoặc xác thực
 }));
 
 // Body parser middleware
