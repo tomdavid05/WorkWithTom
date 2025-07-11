@@ -19,7 +19,63 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   // Configure axios defaults
-  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Add axios interceptor for authentication errors
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Token expired or invalid
+          setUser(null);
+          setAuthToken(null);
+          const currentPath = window.location.pathname;
+          if (!['/login', '/register'].includes(currentPath)) {
+            // Sử dụng setTimeout để tránh vấn đề với navigate trong async context
+            setTimeout(() => {
+              navigate('/login', { replace: true });
+            }, 5000);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [navigate]); // Thêm navigate vào dependency array
 
   // Set auth token on axios headers
   const setAuthToken = (token) => {
@@ -29,6 +85,19 @@ export const AuthProvider = ({ children }) => {
     } else {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
+    }
+  };
+
+  const checkAuthStatus = async () => {
+    try {
+      const response = await axios.get('/auth/me');
+      setUser(response.data.data.user);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setUser(null);
+      setAuthToken(null);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -42,24 +111,20 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       delete axios.defaults.headers.common['Authorization'];
     }
-  }, []);
+  }, []); // Empty dependency array vì chỉ chạy một lần khi mount
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await axios.get('/auth/me');
-      setUser(response.data.data.user);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      setUser(null);
-      setAuthToken(null);
-      // Chỉ redirect nếu không phải đang ở trang login/register
-      if (!['/login', '/register'].includes(window.location.pathname)) {
-        navigate('/login');
+  // Redirect to login if not authenticated and not on auth pages
+  useEffect(() => {
+    if (!loading && !user) {
+      const currentPath = window.location.pathname;
+      if (!['/login', '/register'].includes(currentPath)) {
+        // Sử dụng setTimeout để tránh vấn đề với navigate trong async context
+        setTimeout(() => {
+          navigate('/login', { replace: true });
+        }, 5000);
       }
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [loading, user, navigate]);
 
   const register = async (userData) => {
     try {
@@ -67,21 +132,21 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
 
-      // Tạo một axios instance riêng cho auth
-      const axiosAuth = axios.create({
-        baseURL: import.meta.env.VITE_API_URL
-      });
-
       // Đăng ký
-      const response = await axiosAuth.post('/auth/register', userData);
+      const response = await axios.post('/auth/register', userData);
       const { user, token } = response.data.data;
       
-      setUser(user);
+      // Set token và user ngay lập tức
       setAuthToken(token);
+      setUser(user);
      
       toast.success('Registration successful!');
-      navigate('/dashboard');
-      window.location.reload(); // Reload lại trang để đồng bộ token cho mọi context
+      
+      // Navigate ngay lập tức
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 2000);
+      
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
@@ -96,21 +161,21 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
 
-      // Tạo một axios instance riêng cho auth
-      const axiosAuth = axios.create({
-        baseURL: import.meta.env.VITE_API_URL
-      });
-
       // Đăng nhập
-      const response = await axiosAuth.post('/auth/login', credentials);
+      const response = await axios.post('/auth/login', credentials);
       const { user, token } = response.data.data;
       
-      setUser(user);
+      // Set token và user ngay lập tức
       setAuthToken(token);
+      setUser(user);
       
       toast.success('Login successful!');
-      navigate('/dashboard');
-      window.location.reload(); // Reload lại trang để đồng bộ token cho mọi context
+      
+      // Navigate ngay lập tức
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 2000);
+      
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
@@ -122,7 +187,10 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setAuthToken(null);
-    navigate('/login');
+    // Sử dụng setTimeout để tránh vấn đề với navigate
+    setTimeout(() => {
+      navigate('/login', { replace: true });
+    }, 2000);
     toast.success('Logged out successfully');
   };
 

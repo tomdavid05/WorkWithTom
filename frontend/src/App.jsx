@@ -15,12 +15,17 @@ function App() {
   const { user, loading, isAuthenticated } = useAuth();
   const { fetchTasks } = useTasks();
 
-  // Fetch tasks when user is authenticated
+  // Fetch tasks when user is authenticated and not loading
   useEffect(() => {
-    if (isAuthenticated && user) {
-      fetchTasks();
+    if (isAuthenticated && user && !loading) {
+      // Thêm delay nhỏ để đảm bảo auth state đã ổn định
+      const timer = setTimeout(() => {
+        fetchTasks();
+      }, 5000);
+      
+      return () => clearTimeout(timer);
     }
-  }, [isAuthenticated, user]); // Remove fetchTasks from dependencies
+  }, [isAuthenticated, user, loading]); // Loại bỏ fetchTasks khỏi dependencies để tránh infinite loop
 
   if (loading) {
     return <LoadingSpinner />;

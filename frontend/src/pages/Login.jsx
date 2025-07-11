@@ -29,8 +29,16 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     
-    await login(formData);
-    setLoading(false);
+    try {
+      const result = await login(formData);
+      if (!result.success) {
+        setLoading(false);
+      }
+      // Nếu thành công, không cần set loading false vì sẽ navigate
+    } catch (error) {
+      console.error('Login error:', error);
+      setLoading(false);
+    }
   };
 
   return (

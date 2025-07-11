@@ -17,14 +17,49 @@ export const TaskProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all'); // all, active, completed
 
-  // Đảm bảo axios luôn có Authorization header nếu có token trong localStorage
+  // Đảm bảo axios luôn có Authorization header và baseURL đúng
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    
+    // Luôn set baseURL để đảm bảo nó đúng
+    axios.defaults.baseURL = apiUrl;
+    
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
       delete axios.defaults.headers.common['Authorization'];
     }
+  }, []); // Empty dependency array vì chỉ chạy một lần khi mount
+
+  // Thêm useEffect riêng để set baseURL
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
+  }, []);
+
+  // Thêm useEffect để đảm bảo baseURL luôn được set
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    axios.defaults.baseURL = apiUrl;
   }, []);
 
   const fetchTasks = async () => {
@@ -34,7 +69,10 @@ export const TaskProvider = ({ children }) => {
       setTasks(response.data.data.tasks);
     } catch (error) {
       console.error('Failed to fetch tasks:', error);
-      toast.error('Failed to load tasks');
+      // Chỉ hiển thị toast nếu không phải lỗi 401 (unauthorized)
+      if (error.response?.status !== 401) {
+        toast.error('Failed to load tasks');
+      }
     } finally {
       setLoading(false);
     }

@@ -43,9 +43,17 @@ const Register = () => {
 
     setLoading(true);
     
-    const { username, email, password } = formData;
-    await register({ username, email, password });
-    setLoading(false);
+    try {
+      const { username, email, password } = formData;
+      const result = await register({ username, email, password });
+      if (!result.success) {
+        setLoading(false);
+      }
+      // Nếu thành công, không cần set loading false vì sẽ navigate
+    } catch (error) {
+      console.error('Register error:', error);
+      setLoading(false);
+    }
   };
 
   return (
