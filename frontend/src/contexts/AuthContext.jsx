@@ -40,7 +40,6 @@ export const AuthProvider = ({ children }) => {
       checkAuthStatus();
     } else {
       setLoading(false);
-      delete axios.defaults.headers.common['Authorization'];
     }
   }, []);
 
@@ -78,7 +77,7 @@ export const AuthProvider = ({ children }) => {
       
       setUser(user);
       setAuthToken(token);
-      
+      window.location.reload();
       toast.success('Registration successful!');
       navigate('/dashboard');
       
@@ -107,7 +106,7 @@ export const AuthProvider = ({ children }) => {
       
       setUser(user);
       setAuthToken(token);
-      
+      window.location.reload();
       toast.success('Login successful!');
       navigate('/dashboard');
       
