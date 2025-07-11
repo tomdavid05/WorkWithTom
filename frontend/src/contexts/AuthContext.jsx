@@ -36,10 +36,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setAuthToken(token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       checkAuthStatus();
     } else {
       setLoading(false);
+      delete axios.defaults.headers.common['Authorization'];
     }
   }, []);
 
@@ -80,7 +81,7 @@ export const AuthProvider = ({ children }) => {
      
       toast.success('Registration successful!');
       navigate('/dashboard');
-       window.location.reload();
+      window.location.reload(); // Reload lại trang để đồng bộ token cho mọi context
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Registration failed';
@@ -109,7 +110,7 @@ export const AuthProvider = ({ children }) => {
       
       toast.success('Login successful!');
       navigate('/dashboard');
-      window.location.reload();
+      window.location.reload(); // Reload lại trang để đồng bộ token cho mọi context
       return { success: true };
     } catch (error) {
       const message = error.response?.data?.message || 'Login failed';
