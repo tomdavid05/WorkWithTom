@@ -17,6 +17,12 @@ export const TaskProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all'); // all, active, completed
 
+  // Đảm bảo axios luôn có Authorization header nếu có token trong localStorage
+  const token = localStorage.getItem('token');
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  }
+
   const fetchTasks = async () => {
     setLoading(true);
     try {

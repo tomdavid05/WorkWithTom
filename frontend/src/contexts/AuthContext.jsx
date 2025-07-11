@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }) => {
       checkAuthStatus();
     } else {
       setLoading(false);
+      delete axios.defaults.headers.common['Authorization'];
     }
   }, []);
 
