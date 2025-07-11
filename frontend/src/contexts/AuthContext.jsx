@@ -62,7 +62,17 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      const response = await axios.post('/auth/register', userData);
+      // Xóa token cũ trước khi đăng ký
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+
+      // Tạo một axios instance riêng cho auth
+      const axiosAuth = axios.create({
+        baseURL: import.meta.env.VITE_API_URL
+      });
+
+      // Đăng ký
+      const response = await axiosAuth.post('/auth/register', userData);
       const { user, token } = response.data.data;
       
       setUser(user);
@@ -81,7 +91,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      const response = await axios.post('/auth/login', credentials);
+      // Xóa token cũ trước khi đăng nhập
+      localStorage.removeItem('token');
+      delete axios.defaults.headers.common['Authorization'];
+
+      // Tạo một axios instance riêng cho auth
+      const axiosAuth = axios.create({
+        baseURL: import.meta.env.VITE_API_URL
+      });
+
+      // Đăng nhập
+      const response = await axiosAuth.post('/auth/login', credentials);
       const { user, token } = response.data.data;
       
       setUser(user);
