@@ -19,10 +19,9 @@ function App() {
   // Fetch tasks when user is authenticated and not loading
   useEffect(() => {
     if (isAuthenticated && user && !loading) {
-      console.log('User authenticated, fetching tasks...');
       fetchTasks();
     }
-  }, [isAuthenticated, user, loading, fetchTasks]);
+  }, [isAuthenticated, user, loading]);
 
   if (loading) {
     return <LoadingSpinner />;

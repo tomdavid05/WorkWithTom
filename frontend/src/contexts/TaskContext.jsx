@@ -32,10 +32,8 @@ export const TaskProvider = ({ children }) => {
   }, []);
 
   const fetchTasks = async () => {
-    // Check if user is authenticated before making API call
     const token = localStorage.getItem('token');
     if (!token) {
-      console.log('No token found, skipping task fetch');
       setInitialLoading(false);
       return;
     }
@@ -45,10 +43,10 @@ export const TaskProvider = ({ children }) => {
       const response = await axios.get('/tasks');
       setTasks(response.data.data.tasks);
     } catch (error) {
-      console.error('Failed to fetch tasks:', error);
-      // Chỉ hiển thị toast nếu không phải lỗi 401 (unauthorized)
-      if (error.response?.status !== 401) {
+      // Nếu lỗi 401 thì không gọi lại nữa, không hiện toast
+      if (error.response?.status !== 401 && !fetchTasks.hasShownError) {
         toast.error('Failed to load tasks');
+        fetchTasks.hasShownError = true;
       }
     } finally {
       setLoading(false);

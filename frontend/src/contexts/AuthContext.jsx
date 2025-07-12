@@ -105,29 +105,12 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuthStatus = async () => {
     try {
-      console.log('Checking auth status...');
       const response = await axios.get('/auth/me');
-      console.log('Auth check successful:', response.data);
       setUser(response.data.data.user);
     } catch (error) {
-      console.error('Auth check failed:', error);
-      console.error('Error response:', error.response?.data);
-      
-      // Handle different types of errors
-      if (error.code === 'NETWORK_ERROR' || error.code === 'ERR_NETWORK') {
-        console.log('Network error, keeping user logged in if token exists');
-        // Don't clear user data on network errors, just keep the current state
-        return;
-      }
-      
-      if (error.response?.status === 401) {
-        console.log('Token invalid, clearing user data');
-        setUser(null);
-        setAuthToken(null);
-      } else {
-        console.log('Other error, keeping user logged in');
-        // For other errors, don't clear user data immediately
-      }
+      setUser(null);
+      setAuthToken(null);
+      // Không để loading mãi
     } finally {
       setLoading(false);
     }
