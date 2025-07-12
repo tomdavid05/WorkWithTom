@@ -15,14 +15,13 @@ export const useTasks = () => {
 export const TaskProvider = ({ children }) => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, active, completed
 
   // Đảm bảo axios luôn có Authorization header và baseURL đúng
   useEffect(() => {
     const token = localStorage.getItem('token');
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    
-    // Luôn set baseURL để đảm bảo nó đúng
     axios.defaults.baseURL = apiUrl;
     
     if (token) {
@@ -30,39 +29,17 @@ export const TaskProvider = ({ children }) => {
     } else {
       delete axios.defaults.headers.common['Authorization'];
     }
-  }, []); // Empty dependency array vì chỉ chạy một lần khi mount
-
-  // Thêm useEffect riêng để set baseURL
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
   }, []);
 
   const fetchTasks = async () => {
+    // Check if user is authenticated before making API call
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.log('No token found, skipping task fetch');
+      setInitialLoading(false);
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await axios.get('/tasks');
@@ -75,6 +52,7 @@ export const TaskProvider = ({ children }) => {
       }
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -173,6 +151,7 @@ export const TaskProvider = ({ children }) => {
     tasks: filteredTasks,
     allTasks: tasks,
     loading,
+    initialLoading,
     filter,
     taskStats,
     fetchTasks,

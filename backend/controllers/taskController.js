@@ -1,27 +1,17 @@
-const { sql, isPostgreSQL } = require('../db');
+const { sql } = require('../db');
 
 // Get all tasks for a user
 const getTasks = async (req, res) => {
   try {
-    let result;
-    if (isPostgreSQL) {
-      result = await sql.query(
-        'SELECT id, title, description, completed, priority, due_date, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY created_at DESC',
-        [req.user.id]
-      );
-    } else {
-      result = await sql.query`
-        SELECT id, title, description, completed, priority, due_date, created_at, updated_at
-        FROM tasks 
-        WHERE user_id = ${req.user.id}
-        ORDER BY created_at DESC
-      `;
-    }
+    const result = await sql.query(
+      'SELECT id, title, description, completed, priority, due_date, created_at, updated_at FROM tasks WHERE user_id = $1 ORDER BY created_at DESC',
+      [req.user.id]
+    );
 
     res.json({
       success: true,
       data: {
-        tasks: isPostgreSQL ? result.rows : result.recordset
+        tasks: result.rows
       }
     });
   } catch (error) {
@@ -45,14 +35,11 @@ const createTask = async (req, res) => {
       });
     }
 
-    const result = await sql.query`
-      INSERT INTO tasks (user_id, title, description, priority, due_date)
-      OUTPUT INSERTED.id, INSERTED.title, INSERTED.description, INSERTED.completed, 
-             INSERTED.priority, INSERTED.due_date, INSERTED.created_at, INSERTED.updated_at
-      VALUES (${req.user.id}, ${title}, ${description || null}, ${priority || 'medium'}, ${due_date || null})
-    `;
-
-    const task = result.recordset[0];
+    const result = await sql.query(
+      'INSERT INTO tasks (user_id, title, description, priority, due_date) VALUES ($1, $2, $3, $4, $5) RETURNING id, title, description, completed, priority, due_date, created_at, updated_at',
+      [req.user.id, title, description || null, priority || 'medium', due_date || null]
+    );
+    const task = result.rows[0];
 
     res.status(201).json({
       success: true,
@@ -77,31 +64,24 @@ const updateTask = async (req, res) => {
     const { title, description, completed, priority, due_date } = req.body;
 
     // Check if task exists and belongs to user
-    const existingTask = await sql.query`
-      SELECT id FROM tasks WHERE id = ${id} AND user_id = ${req.user.id}
-    `;
+    const existingTask = await sql.query(
+      'SELECT id FROM tasks WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
 
-    if (existingTask.recordset.length === 0) {
+    if (existingTask.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Task not found'
       });
     }
 
-    const result = await sql.query`
-      UPDATE tasks 
-      SET title = ${title}, 
-          description = ${description || null}, 
-          completed = ${completed}, 
-          priority = ${priority || 'medium'}, 
-          due_date = ${due_date || null},
-          updated_at = GETDATE()
-      OUTPUT INSERTED.id, INSERTED.title, INSERTED.description, INSERTED.completed, 
-             INSERTED.priority, INSERTED.due_date, INSERTED.created_at, INSERTED.updated_at
-      WHERE id = ${id} AND user_id = ${req.user.id}
-    `;
+    const result = await sql.query(
+      'UPDATE tasks SET title = $1, description = $2, completed = $3, priority = $4, due_date = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 AND user_id = $7 RETURNING id, title, description, completed, priority, due_date, created_at, updated_at',
+      [title, description || null, completed, priority || 'medium', due_date || null, id, req.user.id]
+    );
 
-    const task = result.recordset[0];
+    const task = result.rows[0];
 
     res.json({
       success: true,
@@ -125,20 +105,22 @@ const deleteTask = async (req, res) => {
     const { id } = req.params;
 
     // Check if task exists and belongs to user
-    const existingTask = await sql.query`
-      SELECT id FROM tasks WHERE id = ${id} AND user_id = ${req.user.id}
-    `;
+    const existingTask = await sql.query(
+      'SELECT id FROM tasks WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
 
-    if (existingTask.recordset.length === 0) {
+    if (existingTask.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Task not found'
       });
     }
 
-    await sql.query`
-      DELETE FROM tasks WHERE id = ${id} AND user_id = ${req.user.id}
-    `;
+    await sql.query(
+      'DELETE FROM tasks WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
 
     res.json({
       success: true,
@@ -159,29 +141,27 @@ const toggleTask = async (req, res) => {
     const { id } = req.params;
 
     // Check if task exists and belongs to user
-    const existingTask = await sql.query`
-      SELECT id, completed FROM tasks WHERE id = ${id} AND user_id = ${req.user.id}
-    `;
+    const existingTask = await sql.query(
+      'SELECT id, completed FROM tasks WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
 
-    if (existingTask.recordset.length === 0) {
+    if (existingTask.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Task not found'
       });
     }
 
-    const currentCompleted = existingTask.recordset[0].completed;
+    const currentCompleted = existingTask.rows[0].completed;
     const newCompleted = !currentCompleted;
 
-    const result = await sql.query`
-      UPDATE tasks 
-      SET completed = ${newCompleted}, updated_at = GETDATE()
-      OUTPUT INSERTED.id, INSERTED.title, INSERTED.description, INSERTED.completed, 
-             INSERTED.priority, INSERTED.due_date, INSERTED.created_at, INSERTED.updated_at
-      WHERE id = ${id} AND user_id = ${req.user.id}
-    `;
+    const result = await sql.query(
+      'UPDATE tasks SET completed = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 AND user_id = $3 RETURNING id, title, description, completed, priority, due_date, created_at, updated_at',
+      [newCompleted, id, req.user.id]
+    );
 
-    const task = result.recordset[0];
+    const task = result.rows[0];
 
     res.json({
       success: true,

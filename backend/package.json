@@ -9,11 +9,12 @@
     "build": "echo 'No build step required'",
     "postinstall": "echo 'Backend dependencies installed successfully'",
     "deploy:render": "echo 'Deploying to Render...'",
-    "deploy:railway": "echo 'Deploying to Railway...'"
+    "deploy:railway": "echo 'Deploying to Railway...'",
+    "test:connection": "node test-connection.js",
+    "test:system": "node ../scripts/test-system.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "mssql": "^10.0.1",
     "pg": "^8.11.3",
     "dotenv": "^16.3.1",
     "bcryptjs": "^2.4.3",
@@ -28,7 +29,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["todo", "api", "express", "sqlserver"],
+  "keywords": ["todo", "api", "express", "postgresql"],
   "author": "Let's do it Team",
   "license": "MIT"
 } 

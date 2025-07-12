@@ -29,12 +29,26 @@ app.use('/api/', limiter);
 // Thay đổi thành domain Netlify của bạn
 const allowedOrigins = [
   'https://wwtom.netlify.app',
-  'http://localhost:5173' // (nếu dùng local)
+  'https://work-with-tom.netlify.app',
+  'http://localhost:5173', // (nếu dùng local)
+  'http://localhost:3000'  // (nếu dùng local)
 ];
 
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // nếu bạn dùng cookie hoặc xác thực
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parser middleware

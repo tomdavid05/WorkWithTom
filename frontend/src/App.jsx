@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import LoadingSpinner from './components/LoadingSpinner';
+import DebugPanel from './components/DebugPanel';
 import { ThemeProvider } from './contexts/ThemeContext';
 import './i18n';
 import { I18nextProvider } from 'react-i18next';
@@ -18,14 +19,10 @@ function App() {
   // Fetch tasks when user is authenticated and not loading
   useEffect(() => {
     if (isAuthenticated && user && !loading) {
-      // Thêm delay nhỏ để đảm bảo auth state đã ổn định
-      const timer = setTimeout(() => {
-        fetchTasks();
-      }, 5000);
-      
-      return () => clearTimeout(timer);
+      console.log('User authenticated, fetching tasks...');
+      fetchTasks();
     }
-  }, [isAuthenticated, user, loading]); // Loại bỏ fetchTasks khỏi dependencies để tránh infinite loop
+  }, [isAuthenticated, user, loading, fetchTasks]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -53,6 +50,7 @@ function App() {
               element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} 
             />
           </Routes>
+          <DebugPanel />
         </div>
       </ThemeProvider>
     </I18nextProvider>

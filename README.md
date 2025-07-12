@@ -26,7 +26,7 @@ Một ứng dụng Todo hiện đại với tính năng Energy Bar độc đáo,
 ### Backend
 - **Node.js** - Runtime
 - **Express.js** - Web framework
-- **PostgreSQL** - Production Database (SQL Server cho local)
+- **PostgreSQL** - Database
 - **JWT** - Authentication
 - **bcryptjs** - Password hashing
 - **CORS** - Cross-origin requests
@@ -36,7 +36,7 @@ Một ứng dụng Todo hiện đại với tính năng Energy Bar độc đáo,
 
 ### Prerequisites
 - Node.js 18+
-- SQL Server (local development) hoặc PostgreSQL (production)
+- PostgreSQL
 - Git
 
 ### Installation
@@ -61,15 +61,7 @@ npm install
 3. **Configure environment:**
 ```bash
 # Backend (config.env)
-# Cho SQL Server (local development)
-SQL_USER=your_username
-SQL_PASSWORD=your_password
-SQL_DATABASE=your_database
-SQL_SERVER=your_server
-
-# Cho PostgreSQL (production)
-# DATABASE_URL=postgresql://username:password@host:port/database
-
+DATABASE_URL=postgresql://username:password@host:port/database
 JWT_SECRET=your_super_secret_jwt_key
 PORT=5000
 NODE_ENV=development

@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { sql, isPostgreSQL } = require('../db');
+const { sql } = require('../db');
 
 // Register user
 const register = async (req, res) => {
@@ -15,6 +15,15 @@ const register = async (req, res) => {
       });
     }
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email address'
+      });
+    }
+
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -22,20 +31,21 @@ const register = async (req, res) => {
       });
     }
 
-    // Check if user already exists
-    let existingUser;
-    if (isPostgreSQL) {
-      existingUser = await sql.query(
-        'SELECT id FROM users WHERE email = $1 OR username = $2',
-        [email, username]
-      );
-    } else {
-      existingUser = await sql.query`
-        SELECT id FROM users WHERE email = ${email} OR username = ${username}
-      `;
+    // Username validation
+    if (username.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username must be at least 3 characters long'
+      });
     }
 
-    if ((isPostgreSQL ? existingUser.rows.length : existingUser.recordset.length) > 0) {
+    // Check if user already exists
+    const existingUser = await sql.query(
+      'SELECT id FROM users WHERE email = $1 OR username = $2',
+      [email, username]
+    );
+
+    if (existingUser.rows.length > 0) {
       return res.status(400).json({
         success: false,
         message: 'User with this email or username already exists'
@@ -47,29 +57,17 @@ const register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert new user
-    let result;
-    let user;
-    
-    if (isPostgreSQL) {
-      result = await sql.query(
-        'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
-        [username, email, hashedPassword]
-      );
-      user = result.rows[0];
-    } else {
-      result = await sql.query`
-        INSERT INTO users (username, email, password)
-        OUTPUT INSERTED.id, INSERTED.username, INSERTED.email, INSERTED.created_at
-        VALUES (${username}, ${email}, ${hashedPassword})
-      `;
-      user = result.recordset[0];
-    }
+    const result = await sql.query(
+      'INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email, created_at',
+      [username, email, hashedPassword]
+    );
+    const user = result.rows[0];
 
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' } // Increased from 7d to 30d
     );
 
     res.status(201).json({
@@ -107,29 +105,29 @@ const login = async (req, res) => {
       });
     }
 
-    // Find user by email
-    let result;
-    if (isPostgreSQL) {
-      result = await sql.query(
-        'SELECT id, username, email, password, created_at FROM users WHERE email = $1',
-        [email]
-      );
-    } else {
-      result = await sql.query`
-        SELECT id, username, email, password, created_at
-        FROM users 
-        WHERE email = ${email}
-      `;
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide a valid email address'
+      });
     }
 
-    if ((isPostgreSQL ? result.rows.length : result.recordset.length) === 0) {
+    // Find user by email
+    const result = await sql.query(
+      'SELECT id, username, email, password, created_at FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
-    const user = isPostgreSQL ? result.rows[0] : result.recordset[0];
+    const user = result.rows[0];
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -144,7 +142,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { userId: user.id },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' } // Increased from 7d to 30d
     );
 
     res.json({

@@ -5,15 +5,15 @@ This guide will help you set up and run the "Let's do it" todo application on yo
 ## Prerequisites
 
 - Node.js (v16 or higher)
-- SQL Server (Express, Developer, or Enterprise edition)
+- PostgreSQL
 - npm or yarn package manager
 
 ## Database Setup
 
-1. **Install SQL Server** (if not already installed)
-   - Download SQL Server Express from Microsoft's website
+1. **Install PostgreSQL** (if not already installed)
+   - Download PostgreSQL from https://www.postgresql.org/download/
    - Install with default settings
-   - Enable TCP/IP connections in SQL Server Configuration Manager
+   - Note down the password you set during installation
 
 2. **Create Database**
    ```sql
@@ -22,12 +22,9 @@ This guide will help you set up and run the "Let's do it" todo application on yo
 
 3. **Configure Database Connection**
    - Open `backend/config.env`
-   - Update the following variables with your SQL Server details:
+   - Update the following variables with your PostgreSQL details:
    ```env
-   SQL_USER=your_sql_username
-   SQL_PASSWORD=your_sql_password
-   SQL_DATABASE=todo_app
-   SQL_SERVER=localhost
+   DATABASE_URL=postgresql://username:password@localhost:5432/todo_app
    JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
    PORT=5000
    NODE_ENV=development
@@ -106,10 +103,10 @@ This guide will help you set up and run the "Let's do it" todo application on yo
 ## Troubleshooting
 
 ### Database Connection Issues
-- Ensure SQL Server is running
+- Ensure PostgreSQL is running
 - Check firewall settings
 - Verify connection string in `config.env`
-- Make sure TCP/IP is enabled in SQL Server Configuration Manager
+- Make sure PostgreSQL service is started
 
 ### Port Conflicts
 - If port 5000 is in use, change `PORT` in `config.env`
@@ -138,9 +135,9 @@ For production deployment:
 ## Tech Stack
 
 - **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
-- **Backend**: Node.js, Express, SQL Server
+- **Backend**: Node.js, Express, PostgreSQL
 - **Authentication**: JWT
-- **Database**: SQL Server with mssql package
+- **Database**: PostgreSQL with pg package
 - **UI Components**: Lucide React icons, React Hot Toast
 
 ## Support

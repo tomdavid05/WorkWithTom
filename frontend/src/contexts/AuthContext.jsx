@@ -20,86 +20,77 @@ export const AuthProvider = ({ children }) => {
 
   // Configure axios defaults
   const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+  console.log('API URL:', apiUrl);
+  axios.defaults.baseURL = apiUrl;
+  axios.defaults.timeout = 15000; // Increased to 15 seconds
+  axios.defaults.headers.common['Content-Type'] = 'application/json';
   
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Thêm useEffect để đảm bảo baseURL luôn được set
-  useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    axios.defaults.baseURL = apiUrl;
-  }, []);
-
-  // Add axios interceptor for authentication errors
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          // Token expired or invalid
-          setUser(null);
-          setAuthToken(null);
-          const currentPath = window.location.pathname;
-          if (!['/login', '/register'].includes(currentPath)) {
-            // Sử dụng setTimeout để tránh vấn đề với navigate trong async context
-            setTimeout(() => {
-              navigate('/login', { replace: true });
-            }, 5000);
-          }
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    return () => {
-      axios.interceptors.response.eject(interceptor);
-    };
-  }, [navigate]); // Thêm navigate vào dependency array
+  // Add retry logic for failed requests
+  axios.defaults.retry = 3;
+  axios.defaults.retryDelay = 1000;
 
   // Set auth token on axios headers
   const setAuthToken = (token) => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       localStorage.setItem('token', token);
+      console.log('Token set successfully');
     } else {
       delete axios.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
+      console.log('Token removed');
     }
   };
 
-  const checkAuthStatus = async () => {
-    try {
-      const response = await axios.get('/auth/me');
-      setUser(response.data.data.user);
-    } catch (error) {
-      console.error('Auth check failed:', error);
-      setUser(null);
-      setAuthToken(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Setup axios interceptors
+  useEffect(() => {
+    // Request interceptor
+    const requestInterceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // Response interceptor
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => {
+        return response;
+      },
+      async (error) => {
+        const originalRequest = error.config;
+        
+        // If error is 401 and we haven't already tried to refresh
+        if (error.response?.status === 401 && !originalRequest._retry) {
+          originalRequest._retry = true;
+          
+          // Clear token and user data
+          setUser(null);
+          setAuthToken(null);
+          
+          // Only redirect to login if we're not already on login page
+          if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+            navigate('/login', { replace: true });
+            toast.error('Session expired. Please login again.');
+          }
+        }
+        
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup interceptors on unmount
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
+  }, [navigate]);
 
   // Check if user is logged in on app load
   useEffect(() => {
@@ -109,43 +100,49 @@ export const AuthProvider = ({ children }) => {
       checkAuthStatus();
     } else {
       setLoading(false);
-      delete axios.defaults.headers.common['Authorization'];
     }
-  }, []); // Empty dependency array vì chỉ chạy một lần khi mount
+  }, []);
 
-  // Redirect to login if not authenticated and not on auth pages
-  useEffect(() => {
-    if (!loading && !user) {
-      const currentPath = window.location.pathname;
-      if (!['/login', '/register'].includes(currentPath)) {
-        // Sử dụng setTimeout để tránh vấn đề với navigate trong async context
-        setTimeout(() => {
-          navigate('/login', { replace: true });
-        }, 5000);
+  const checkAuthStatus = async () => {
+    try {
+      console.log('Checking auth status...');
+      const response = await axios.get('/auth/me');
+      console.log('Auth check successful:', response.data);
+      setUser(response.data.data.user);
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      console.error('Error response:', error.response?.data);
+      
+      // Handle different types of errors
+      if (error.code === 'NETWORK_ERROR' || error.code === 'ERR_NETWORK') {
+        console.log('Network error, keeping user logged in if token exists');
+        // Don't clear user data on network errors, just keep the current state
+        return;
       }
+      
+      if (error.response?.status === 401) {
+        console.log('Token invalid, clearing user data');
+        setUser(null);
+        setAuthToken(null);
+      } else {
+        console.log('Other error, keeping user logged in');
+        // For other errors, don't clear user data immediately
+      }
+    } finally {
+      setLoading(false);
     }
-  }, [loading, user, navigate]);
+  };
 
   const register = async (userData) => {
     try {
-      // Xóa token cũ trước khi đăng ký
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
-
-      // Đăng ký
       const response = await axios.post('/auth/register', userData);
       const { user, token } = response.data.data;
       
-      // Set token và user ngay lập tức
       setAuthToken(token);
       setUser(user);
      
       toast.success('Registration successful!');
-      
-      // Navigate ngay lập tức
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 2000);
+      navigate('/dashboard', { replace: true });
       
       return { success: true };
     } catch (error) {
@@ -157,24 +154,14 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
-      // Xóa token cũ trước khi đăng nhập
-      localStorage.removeItem('token');
-      delete axios.defaults.headers.common['Authorization'];
-
-      // Đăng nhập
       const response = await axios.post('/auth/login', credentials);
       const { user, token } = response.data.data;
       
-      // Set token và user ngay lập tức
       setAuthToken(token);
       setUser(user);
       
       toast.success('Login successful!');
-      
-      // Navigate ngay lập tức
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 2000);
+      navigate('/dashboard', { replace: true });
       
       return { success: true };
     } catch (error) {
@@ -187,10 +174,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setAuthToken(null);
-    // Sử dụng setTimeout để tránh vấn đề với navigate
-    setTimeout(() => {
-      navigate('/login', { replace: true });
-    }, 2000);
+    navigate('/login', { replace: true });
     toast.success('Logged out successfully');
   };
 
